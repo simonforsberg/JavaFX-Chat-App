@@ -18,6 +18,7 @@ public class HelloController {
     public HelloController() {
         this(new HelloModel(new NtfyConnectionImpl()));
     }
+
     public HelloController(HelloModel model) {
         this.model = model;
     }
@@ -55,7 +56,6 @@ public class HelloController {
                 model.sendMessage();
                 inputField.clear();
             } catch (IOException e) {
-                // TODO: Show error message to user
                 System.err.println("Failed to send message: " + e.getMessage());
             }
         }

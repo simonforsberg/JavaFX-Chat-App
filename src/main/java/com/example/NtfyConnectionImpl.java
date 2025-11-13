@@ -58,18 +58,21 @@ public class NtfyConnectionImpl implements NtfyConnection {
                     System.err.println("Failed to receive messages: " + throwable.getMessage());
                     return null;
                 })
-                .thenAccept(response -> response.body()
-                        .map(s -> {
-                            try {
-                                return mapper.readValue(s, NtfyMessageDto.class);
-                            } catch (Exception e) {
-                                System.err.println("Failed to parse message: " + e.getMessage());
-                                return null;
-                            }
-                        })
-                        .filter(Objects::nonNull)
-                        .filter(message -> "message".equals(message.event()))
-                        .peek(System.out::println)
-                        .forEach(messageHandler));
+
+                .thenAccept(response -> {
+                    if (response == null) return;
+                    response.body()
+                            .map(s -> {
+                                try {
+                                    return mapper.readValue(s, NtfyMessageDto.class);
+                                } catch (Exception e) {
+                                    System.err.println("Failed to parse message: " + e.getMessage());
+                                    return null;
+                                }
+                            })
+                            .filter(Objects::nonNull)
+                            .filter(message -> "message".equals(message.event()))
+                            .forEach(messageHandler);
+                });
     }
 }

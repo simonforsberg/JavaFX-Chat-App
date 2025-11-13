@@ -62,6 +62,7 @@ public class HelloModel {
 
     public void sendMessage() throws IOException {
         connection.send(topic.get(), messageToSend.get());
+        messageToSend.set("");
     }
 
     public void connectToTopic() {
