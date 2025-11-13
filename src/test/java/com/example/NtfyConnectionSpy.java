@@ -8,10 +8,9 @@ public class NtfyConnectionSpy implements NtfyConnection {
     String topic;
 
     @Override
-    public boolean send(String topic, String message) {
+    public void send(String topic, String message) {
         this.topic = topic;
         this.message = message;
-        return true;
     }
 
     @Override

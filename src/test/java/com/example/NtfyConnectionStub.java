@@ -7,8 +7,7 @@ public class NtfyConnectionStub implements NtfyConnection {
     private Consumer<NtfyMessageDto> messageHandler;
 
     @Override
-    public boolean send(String topic, String message) {
-        return true;
+    public void send(String topic, String message) {
     }
 
     @Override

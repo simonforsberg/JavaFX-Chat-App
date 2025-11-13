@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +15,7 @@ class HelloModelTest {
 
     @Test
     @DisplayName("GIVEN a model with messageToSend WHEN calling sendMessage THEN send method on connection should be called")
-    void sendMessageCallsConnectionWithMessageToSend() {
+    void sendMessageCallsConnectionWithMessageToSend() throws IOException {
         // Arrange  - Given
         var spy = new NtfyConnectionSpy();
         var model = new HelloModel(spy);
@@ -26,7 +28,7 @@ class HelloModelTest {
 
     @Test
     @DisplayName("GIVEN a fake Ntfy server WHEN calling sendMessage THEN an HTTP POST request should be sent with correct body")
-    void sendMessageToFakeServer(WireMockRuntimeInfo wmRuntimeInfo) {
+    void sendMessageToFakeServer(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
         // Arrange  - Given
         var con = new NtfyConnectionImpl("http://localhost:" + wmRuntimeInfo.getHttpPort());
         var model = new HelloModel(con);

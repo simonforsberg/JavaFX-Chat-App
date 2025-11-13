@@ -6,6 +6,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.IOException;
+
 /**
  * Model layer: encapsulates application data and business logic.
  */
@@ -58,7 +60,7 @@ public class HelloModel {
         return "Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".";
     }
 
-    public void sendMessage() {
+    public void sendMessage() throws IOException {
         connection.send(topic.get(), messageToSend.get());
     }
 

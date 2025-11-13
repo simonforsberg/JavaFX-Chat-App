@@ -29,22 +29,18 @@ public class NtfyConnectionImpl implements NtfyConnection {
     }
 
     @Override
-    public boolean send(String topic, String message) {
+    public void send(String topic, String message) throws IOException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(message))
                 .header("Cache", "no")
                 .uri(URI.create(hostName + "/" + topic))
                 .build();
         try {
-            var response = http.send(httpRequest, HttpResponse.BodyHandlers.discarding());
-            return true;
-        } catch (IOException e) {
-            System.out.println("Error sending message");
+            http.send(httpRequest, HttpResponse.BodyHandlers.discarding());
         } catch (InterruptedException e) {
-            System.out.println("Interrupted sending message");
             Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while sending message", e);
         }
-        return false;
     }
 
     @Override

@@ -6,6 +6,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
+
 /**
  * Controller layer: mediates between the view (FXML) and the model.
  */
@@ -39,7 +41,7 @@ public class HelloController {
         model.connectToTopic();
     }
 
-    public void sendMessage(ActionEvent actionEvent) {
+    public void sendMessage(ActionEvent actionEvent) throws IOException {
         if (!inputField.getText().trim().isEmpty()) {
             model.sendMessage();
             inputField.clear();
