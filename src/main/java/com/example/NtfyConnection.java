@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 
 public interface NtfyConnection {
 
-    public boolean send(String topic, String message);
+    boolean send(String topic, String message);
 
-    public void receive(String topic, Consumer<NtfyMessageDto> messageHandler);
+    void receive(String topic, Consumer<NtfyMessageDto> messageHandler);
 
 }

@@ -68,6 +68,17 @@ public class HelloModel {
     }
 
     public void receiveMessage() {
-        connection.receive(topic.get(), m -> Platform.runLater(() -> messages.add(m)));
+        connection.receive(topic.get(),
+                m -> runOnFx(() -> messages.add(m)));
+    }
+
+    private static void runOnFx(Runnable task) {
+        try {
+            if (Platform.isFxApplicationThread()) task.run();
+            else Platform.runLater(task);
+        } catch (IllegalStateException notInitialized) {
+            // JavaFX toolkit not initialized (e.g., unit tests): run inline
+            task.run();
+        }
     }
 }

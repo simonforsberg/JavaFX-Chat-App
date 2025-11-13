@@ -2,8 +2,6 @@ package com.example;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import javafx.application.Platform;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,12 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @WireMockTest
 class HelloModelTest {
-
-    @BeforeAll
-    static void initJavaFx() {
-        Platform.startup(() -> {
-        });
-    }
 
     @Test
     @DisplayName("GIVEN a model with messageToSend WHEN calling sendMessage THEN send method on connection should be called")
