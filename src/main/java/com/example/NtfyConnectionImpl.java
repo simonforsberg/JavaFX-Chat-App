@@ -54,6 +54,10 @@ public class NtfyConnectionImpl implements NtfyConnection {
                 .build();
 
         receiveTask = http.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines())
+                .exceptionally(throwable -> {
+                    System.err.println("Failed to receive messages: " + throwable.getMessage());
+                    return null;
+                })
                 .thenAccept(response -> response.body()
                         .map(s -> {
                             try {

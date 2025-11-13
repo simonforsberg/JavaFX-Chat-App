@@ -13,8 +13,16 @@ import java.io.IOException;
  */
 public class HelloController {
 
-    private final HelloModel model = new HelloModel(new NtfyConnectionImpl());
+    private final HelloModel model;
 
+    public HelloController() {
+        this(new HelloModel(new NtfyConnectionImpl()));
+    }
+    public HelloController(HelloModel model) {
+        this.model = model;
+    }
+
+    @FXML
     public ListView<NtfyMessageDto> messageView;
 
     @FXML
@@ -41,10 +49,15 @@ public class HelloController {
         model.connectToTopic();
     }
 
-    public void sendMessage(ActionEvent actionEvent) throws IOException {
+    public void sendMessage(ActionEvent actionEvent) {
         if (!inputField.getText().trim().isEmpty()) {
-            model.sendMessage();
-            inputField.clear();
+            try {
+                model.sendMessage();
+                inputField.clear();
+            } catch (IOException e) {
+                // TODO: Show error message to user
+                System.err.println("Failed to send message: " + e.getMessage());
+            }
         }
     }
 
