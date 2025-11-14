@@ -104,20 +104,31 @@ public class HelloModel {
     /**
      * Connects to the current topic by creating a new subscription.
      * Any previous subscription is closed first.
+     * Old messages are preserved if subscription creation fails.
      * Incoming messages are added to {@link #messages} on the JavaFX thread.
      */
     public void connectToTopic() {
         disconnect();
 
+        // Make a backup of current messages in case subscription fails
+        var oldMessages = FXCollections.observableArrayList(messages);
+        // Clear messages for the new topic
+        messages.clear();
+
         try {
+            // Start receiving new messages asynchronously
             currentSubscription = connection.receive(topic.get(),
                     m -> runOnFx(() -> messages.add(m)));
-            messages.clear();
+            // Mark as connected
             connected.set(true);
         } catch (Exception e) {
+            // Restore old messages if connection failed
+            messages.setAll(oldMessages);
+            connected.set(false);
             System.err.println("Failed to connect to topic: " + e.getMessage());
         }
     }
+
 
     /**
      * Stops the active subscription, if one exists, and updates connection state.
