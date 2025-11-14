@@ -32,7 +32,7 @@ public class NtfyConnectionImpl implements NtfyConnection {
     public void send(String topic, String message) throws IOException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(message))
-                .header("Cache", "no")
+                .header("Cache-Control", "no-cache")
                 .uri(URI.create(hostName + "/" + topic))
                 .build();
         try {
