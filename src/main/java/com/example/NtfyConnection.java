@@ -26,7 +26,7 @@ public interface NtfyConnection {
      * Subscribes to a topic and receives messages asynchronously.
      *
      * @param topic          the topic to subscribe to
-     * @param messageHandler callback invoked for every received message
+     * @param messageHandler callback invoked for every received message on a background thread
      * @return a {@link Subscription} that controls the active message stream
      */
     Subscription receive(String topic, Consumer<NtfyMessageDto> messageHandler);
@@ -39,6 +39,7 @@ public interface NtfyConnection {
 
         /**
          * Closes this subscription and stops receiving messages.
+         *
          * @throws IOException if closing fails
          */
         @Override
@@ -46,6 +47,7 @@ public interface NtfyConnection {
 
         /**
          * Checks whether the subscription is still active.
+         *
          * @return true if active, false otherwise
          */
         boolean isOpen();

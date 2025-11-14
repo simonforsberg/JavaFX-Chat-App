@@ -6,8 +6,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX application entry point.
+ * Loads the FXML view and displays the main window.
+ */
 public class HelloFX extends Application {
 
+    /**
+     * Initializes and shows the primary JavaFX stage.
+     */
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloFX.class.getResource("hello-view.fxml"));
@@ -18,8 +25,10 @@ public class HelloFX extends Application {
         stage.show();
     }
 
+    /**
+     * Launches the JavaFX application.
+     */
     public static void main(String[] args) {
         launch();
     }
-
 }

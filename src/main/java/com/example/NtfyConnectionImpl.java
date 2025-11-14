@@ -13,21 +13,43 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+/**
+ * Implementation of {@link NtfyConnection} that communicates with a Ntfy server
+ * using Java's built-in {@link HttpClient}.
+ * Supports sending messages to a topic and subscribing to a topic to receive streaming
+ * JSON messages in real time.
+ */
 public class NtfyConnectionImpl implements NtfyConnection {
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final String hostName;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Creates a connection using a hostname loaded from a .env file.
+     * Expects the variable HOST_NAME to be present.
+     */
     public NtfyConnectionImpl() {
         Dotenv dotenv = Dotenv.load();
         hostName = Objects.requireNonNull(dotenv.get("HOST_NAME"));
     }
 
+    /**
+     * Creates a connection using the given hostname.
+     *
+     * @param hostName Base URL of the Ntfy server
+     */
     public NtfyConnectionImpl(String hostName) {
         this.hostName = hostName;
     }
 
+    /**
+     * Sends a message to the given topic.
+     *
+     * @param topic   The topic to publish to.
+     * @param message Message body to send.
+     * @throws IOException If sending fails or the thread is interrupted.
+     */
     @Override
     public void send(String topic, String message) throws IOException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -43,6 +65,17 @@ public class NtfyConnectionImpl implements NtfyConnection {
         }
     }
 
+    /**
+     * Subscribes to a topic and receives incoming messages as a JSON stream.
+     * Each valid message is deserialized into {@link NtfyMessageDto} and passed
+     * to the given message handler.
+     * <p>
+     * The subscription remains active until {@link Subscription#close()} is called.
+     *
+     * @param topic           Topic to subscribe to.
+     * @param messageHandler  Callback invoked for each received message.
+     * @return A {@link Subscription} that can be closed to stop listening.
+     */
     @Override
     public Subscription receive(String topic, Consumer<NtfyMessageDto> messageHandler) {
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -60,7 +93,7 @@ public class NtfyConnectionImpl implements NtfyConnection {
                 .thenAccept(response -> {
                     if (response == null) return;
                     response.body()
-                            .filter(s -> active.get())  // Only process if still active
+                            .filter(s -> active.get())
                             .map(s -> {
                                 try {
                                     return mapper.readValue(s, NtfyMessageDto.class);
@@ -75,12 +108,18 @@ public class NtfyConnectionImpl implements NtfyConnection {
                 });
 
         return new Subscription() {
+            /**
+             * Stops the subscription and cancels the streaming request.
+             */
             @Override
             public void close() throws IOException {
                 active.set(false);
                 future.cancel(true);
             }
 
+            /**
+             * Indicates whether the subscription is still active.
+             */
             @Override
             public boolean isOpen() {
                 return active.get() && !future.isDone();
