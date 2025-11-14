@@ -10,6 +10,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class NtfyConnectionImpl implements NtfyConnection {
@@ -17,7 +18,6 @@ public class NtfyConnectionImpl implements NtfyConnection {
     private final HttpClient http = HttpClient.newHttpClient();
     private final String hostName;
     private final ObjectMapper mapper = new ObjectMapper();
-    private CompletableFuture<Void> receiveTask;
 
     public NtfyConnectionImpl() {
         Dotenv dotenv = Dotenv.load();
@@ -44,24 +44,23 @@ public class NtfyConnectionImpl implements NtfyConnection {
     }
 
     @Override
-    public synchronized void receive(String topic, Consumer<NtfyMessageDto> messageHandler) {
-        if (receiveTask != null) {
-            receiveTask.cancel(true);
-        }
+    public Subscription receive(String topic, Consumer<NtfyMessageDto> messageHandler) {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(URI.create(hostName + "/" + topic + "/json"))
                 .build();
 
-        receiveTask = http.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines())
+        AtomicBoolean active = new AtomicBoolean(true);
+
+        CompletableFuture<Void> future = http.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofLines())
                 .exceptionally(throwable -> {
                     System.err.println("Failed to receive messages: " + throwable.getMessage());
                     return null;
                 })
-
                 .thenAccept(response -> {
                     if (response == null) return;
                     response.body()
+                            .filter(s -> active.get())  // Only process if still active
                             .map(s -> {
                                 try {
                                     return mapper.readValue(s, NtfyMessageDto.class);
@@ -74,5 +73,18 @@ public class NtfyConnectionImpl implements NtfyConnection {
                             .filter(message -> "message".equals(message.event()))
                             .forEach(messageHandler);
                 });
+
+        return new Subscription() {
+            @Override
+            public void close() {
+                active.set(false);
+                future.cancel(true);
+            }
+
+            @Override
+            public boolean isActive() {
+                return active.get() && !future.isDone();
+            }
+        };
     }
 }

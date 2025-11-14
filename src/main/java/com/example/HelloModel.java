@@ -18,9 +18,10 @@ public class HelloModel {
     private final StringProperty messageToSend = new SimpleStringProperty();
     private final StringProperty topic = new SimpleStringProperty("mytopic");
 
+    private NtfyConnection.Subscription currentSubscription;
+
     public HelloModel(NtfyConnection connection) {
         this.connection = connection;
-        receiveMessage();
     }
 
     public ObservableList<NtfyMessageDto> getMessages() {
@@ -66,13 +67,19 @@ public class HelloModel {
     }
 
     public void connectToTopic() {
+        disconnect();
+
         messages.clear();
-        receiveMessage();
+
+        currentSubscription = connection.receive(topic.get(),
+                m -> runOnFx(() -> messages.add(m)));
     }
 
-    public void receiveMessage() {
-        connection.receive(topic.get(),
-                m -> runOnFx(() -> messages.add(m)));
+    public void disconnect() {
+        if (currentSubscription != null && currentSubscription.isActive()) {
+            currentSubscription.close();
+            currentSubscription = null;
+        }
     }
 
     private static void runOnFx(Runnable task) {
@@ -80,7 +87,6 @@ public class HelloModel {
             if (Platform.isFxApplicationThread()) task.run();
             else Platform.runLater(task);
         } catch (IllegalStateException notInitialized) {
-            // JavaFX toolkit not initialized (e.g., unit tests): run inline
             task.run();
         }
     }

@@ -14,7 +14,21 @@ public class NtfyConnectionSpy implements NtfyConnection {
     }
 
     @Override
-    public void receive(String topic, Consumer<NtfyMessageDto> messageHandler) {
-    }
+    public Subscription receive(String topic, Consumer<NtfyMessageDto> messageHandler) {
+        this.topic = topic;
 
+        return new Subscription() {
+            private boolean active = true;
+
+            @Override
+            public void close() {
+                active = false;
+            }
+
+            @Override
+            public boolean isActive() {
+                return active;
+            }
+        };
+    }
 }

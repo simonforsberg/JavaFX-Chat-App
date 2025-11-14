@@ -7,6 +7,10 @@ public interface NtfyConnection {
 
     void send(String topic, String message) throws IOException;
 
-    void receive(String topic, Consumer<NtfyMessageDto> messageHandler);
+    Subscription receive(String topic, Consumer<NtfyMessageDto> messageHandler);
 
+    interface Subscription {
+        void close();
+        boolean isActive();
+    }
 }

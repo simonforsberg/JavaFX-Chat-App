@@ -16,27 +16,27 @@ class HelloModelTest {
     @Test
     @DisplayName("GIVEN a model with messageToSend WHEN calling sendMessage THEN send method on connection should be called")
     void sendMessageCallsConnectionWithMessageToSend() throws IOException {
-        // Arrange  - Given
+
         var spy = new NtfyConnectionSpy();
         var model = new HelloModel(spy);
         model.setMessageToSend("Hello World");
-        // Act      - When
+
         model.sendMessage();
-        // Assert   - Then
+
         assertThat(spy.message).isEqualTo("Hello World");
     }
 
     @Test
     @DisplayName("GIVEN a fake Ntfy server WHEN calling sendMessage THEN an HTTP POST request should be sent with correct body")
     void sendMessageToFakeServer(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
-        // Arrange  - Given
+
         var con = new NtfyConnectionImpl("http://localhost:" + wmRuntimeInfo.getHttpPort());
         var model = new HelloModel(con);
         model.setMessageToSend("Hello World");
         stubFor(post("/mytopic").willReturn(ok()));
-        // Act      - When
+
         model.sendMessage();
-        // Assert   - Then
+
         verify(postRequestedFor(urlEqualTo("/mytopic"))
                 .withRequestBody(matching("Hello World")));
     }
@@ -44,13 +44,14 @@ class HelloModelTest {
     @Test
     @DisplayName("GIVEN a stubbed connection WHEN receiving message THEN it should appear in the model's messages list")
     void receiveMessageAddsMessagesToList() throws InterruptedException {
-        // Arrange - Given
         var stub = new NtfyConnectionStub();
         var model = new HelloModel(stub);
-        // Act - When
+
+        model.connectToTopic();
+
         stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Hello world"));
         Thread.sleep(50);
-        // Assert - Then
+
         assertThat(model.getMessages())
                 .extracting(NtfyMessageDto::message)
                 .containsExactly("Hello world");
@@ -59,16 +60,31 @@ class HelloModelTest {
     @Test
     @DisplayName("GIVEN a model with messages WHEN connecting to a new topic THEN old messages are cleared")
     void connectToTopicClearsMessages() {
-        // Arrange - Given
         var stub = new NtfyConnectionStub();
         var model = new HelloModel(stub);
-        // Act - When
+
+        model.connectToTopic();
+
         stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Old message"));
         assertThat(model.getMessages()).hasSize(1);
+
         model.setTopic("newtopic");
         model.connectToTopic();
-        // Assert - Then
+
         assertThat(model.getMessages()).isEmpty();
     }
 
+    @Test
+    @DisplayName("GIVEN an active subscription WHEN disconnecting THEN subscription should be closed")
+    void disconnectClosesSubscription() {
+        var stub = new NtfyConnectionStub();
+        var model = new HelloModel(stub);
+
+        model.connectToTopic();
+        model.disconnect();
+
+        stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Should not appear"));
+
+        assertThat(model.getMessages()).isEmpty();
+    }
 }
