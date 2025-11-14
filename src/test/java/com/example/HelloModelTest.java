@@ -1,0 +1,90 @@
+package com.example;
+
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@WireMockTest
+class HelloModelTest {
+
+    @Test
+    @DisplayName("GIVEN a model with messageToSend WHEN calling sendMessage THEN send method on connection should be called")
+    void sendMessageCallsConnectionWithMessageToSend() throws IOException {
+
+        var spy = new NtfyConnectionSpy();
+        var model = new HelloModel(spy);
+        model.setMessageToSend("Hello World");
+
+        model.sendMessage();
+
+        assertThat(spy.message).isEqualTo("Hello World");
+    }
+
+    @Test
+    @DisplayName("GIVEN a fake Ntfy server WHEN calling sendMessage THEN an HTTP POST request should be sent with correct body")
+    void sendMessageToFakeServer(WireMockRuntimeInfo wmRuntimeInfo) throws IOException {
+
+        var con = new NtfyConnectionImpl("http://localhost:" + wmRuntimeInfo.getHttpPort());
+        var model = new HelloModel(con);
+        model.setMessageToSend("Hello World");
+        stubFor(post("/mytopic").willReturn(ok()));
+
+        model.sendMessage();
+
+        verify(postRequestedFor(urlEqualTo("/mytopic"))
+                .withRequestBody(matching("Hello World")));
+    }
+
+    @Test
+    @DisplayName("GIVEN a stubbed connection WHEN receiving message THEN it should appear in the model's messages list")
+    void receiveMessageAddsMessagesToList() throws InterruptedException {
+        var stub = new NtfyConnectionStub();
+        var model = new HelloModel(stub);
+
+        model.connectToTopic();
+
+        stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Hello world"));
+        Thread.sleep(50);
+
+        assertThat(model.getMessages())
+                .extracting(NtfyMessageDto::message)
+                .containsExactly("Hello world");
+    }
+
+    @Test
+    @DisplayName("GIVEN a model with messages WHEN connecting to a new topic THEN old messages are cleared")
+    void connectToTopicClearsMessages() {
+        var stub = new NtfyConnectionStub();
+        var model = new HelloModel(stub);
+
+        model.connectToTopic();
+
+        stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Old message"));
+        assertThat(model.getMessages()).hasSize(1);
+
+        model.setTopic("newtopic");
+        model.connectToTopic();
+
+        assertThat(model.getMessages()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("GIVEN an active subscription WHEN disconnecting THEN subscription should be closed")
+    void disconnectClosesSubscription() {
+        var stub = new NtfyConnectionStub();
+        var model = new HelloModel(stub);
+
+        model.connectToTopic();
+        model.disconnect();
+
+        stub.simulateIncomingMessage(new NtfyMessageDto("1", System.currentTimeMillis(), "message", "mytopic", "Should not appear"));
+
+        assertThat(model.getMessages()).isEmpty();
+    }
+}
