@@ -80,10 +80,13 @@ public class HelloModel {
         disconnect();
         messages.clear();
 
-        currentSubscription = connection.receive(topic.get(),
-                m -> runOnFx(() -> messages.add(m)));
-
-        connected.set(true);
+        try {
+            currentSubscription = connection.receive(topic.get(),
+                    m -> runOnFx(() -> messages.add(m)));
+            connected.set(true);
+        } catch (Exception e) {
+            System.err.println("Failed to connect to topic: " + e.getMessage());
+        }
     }
 
     public void disconnect() {
