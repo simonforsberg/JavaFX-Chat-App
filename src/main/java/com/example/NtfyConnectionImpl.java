@@ -76,13 +76,13 @@ public class NtfyConnectionImpl implements NtfyConnection {
 
         return new Subscription() {
             @Override
-            public void close() {
+            public void close() throws IOException {
                 active.set(false);
                 future.cancel(true);
             }
 
             @Override
-            public boolean isActive() {
+            public boolean isOpen() {
                 return active.get() && !future.isDone();
             }
         };

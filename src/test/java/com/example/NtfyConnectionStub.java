@@ -23,7 +23,7 @@ public class NtfyConnectionStub implements NtfyConnection {
             }
 
             @Override
-            public boolean isActive() {
+            public boolean isOpen() {
                 return subscriptionActive;
             }
         };

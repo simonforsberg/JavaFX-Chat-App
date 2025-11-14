@@ -10,12 +10,16 @@
       fx:controller="com.example.HelloController">
 
     <padding>
-        <Insets bottom="20" left="20" right="20" top="20" />
+        <Insets bottom="25" left="20" right="20" top="20" />
     </padding>
 
     <Label fx:id="messageLabel"
            style="-fx-font-size: 20px;"
            text="JavaFX Chat App 💬" />
+
+    <Label fx:id="statusLabel"
+           style="-fx-font-weight: bold;"
+           text="🔴 Disconnected" />
 
     <HBox alignment="CENTER_LEFT"
           spacing="10">

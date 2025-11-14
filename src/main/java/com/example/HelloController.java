@@ -30,6 +30,9 @@ public class HelloController {
     private Label messageLabel;
 
     @FXML
+    private Label statusLabel;
+
+    @FXML
     private TextField inputField;
 
     @FXML
@@ -42,10 +45,12 @@ public class HelloController {
         }
 
         inputField.textProperty().bindBidirectional(model.messageToSendProperty());
-
         topicField.textProperty().bindBidirectional(model.topicProperty());
-
         messageView.setItems(model.getMessages());
+
+        model.connectedProperty().addListener((obs, wasConnected, isConnected) -> {
+            statusLabel.setText(isConnected ? "🟢 Connected" : "🔴 Disconnected");
+        });
 
         model.connectToTopic();
     }

@@ -1,6 +1,8 @@
 package com.example;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -17,8 +19,8 @@ public class HelloModel {
     private final ObservableList<NtfyMessageDto> messages = FXCollections.observableArrayList();
     private final StringProperty messageToSend = new SimpleStringProperty();
     private final StringProperty topic = new SimpleStringProperty("mytopic");
-
     private NtfyConnection.Subscription currentSubscription;
+    private final ReadOnlyBooleanWrapper connected = new ReadOnlyBooleanWrapper(false);
 
     public HelloModel(NtfyConnection connection) {
         this.connection = connection;
@@ -52,6 +54,14 @@ public class HelloModel {
         this.topic.set(topic);
     }
 
+    public ReadOnlyBooleanProperty connectedProperty() {
+        return connected.getReadOnlyProperty();
+    }
+
+    public boolean isConnected() {
+        return connected.get();
+    }
+
     /**
      * Returns a greeting based on the current Java and JavaFX versions.
      */
@@ -68,17 +78,25 @@ public class HelloModel {
 
     public void connectToTopic() {
         disconnect();
-
         messages.clear();
 
         currentSubscription = connection.receive(topic.get(),
                 m -> runOnFx(() -> messages.add(m)));
+
+        connected.set(true);
     }
 
     public void disconnect() {
-        if (currentSubscription != null && currentSubscription.isActive()) {
-            currentSubscription.close();
+        if (currentSubscription != null) {
+            try {
+                if (currentSubscription.isOpen()) {
+                    currentSubscription.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error closing subscription: " + e.getMessage());
+            }
             currentSubscription = null;
+            connected.set(false);
         }
     }
 

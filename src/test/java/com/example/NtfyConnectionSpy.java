@@ -26,7 +26,7 @@ public class NtfyConnectionSpy implements NtfyConnection {
             }
 
             @Override
-            public boolean isActive() {
+            public boolean isOpen() {
                 return active;
             }
         };
