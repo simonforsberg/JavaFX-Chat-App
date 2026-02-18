@@ -11,6 +11,7 @@ A real-time chat client built with **JavaFX 25** and powered by [ntfy](https://d
 
 This project was developed as a school assignment during my studies.
 I'm including it in my portfolio as it demonstrates real-time messaging, JavaFX, MVC architecture, and testing.
+
 ---
 
 ## ✨ Features
