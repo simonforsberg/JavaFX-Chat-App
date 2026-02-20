@@ -19,8 +19,9 @@ I'm including it in my portfolio as it demonstrates real-time messaging, JavaFX,
 - **MVC architecture** — clean separation between `HelloFX` (app), `HelloController` (controller), and `HelloModel` (model)
 - **Send messages** to a configurable ntfy topic via [JSON POST](https://docs.ntfy.sh/publish/#publish-as-json)
 - **Receive messages** in real time via [JSON stream](https://docs.ntfy.sh/subscribe/api/)
+- **Switch topics** — change the topic name and reconnect on the fly with the "Connect" button
+- **Connection status indicator** — live 🟢/🔴 status showing whether you're connected to a topic
 - **Environment-based configuration** — backend URL loaded from a `.env` file (excluded from version control)
-- **File attachments** — send files via an "Attach local file" option
 - **Unit tested** — model layer covered with JUnit 5, AssertJ, and Mockito
 - **CI/CD** — GitHub Actions workflow for compilation checks, test execution, and autograding
 
