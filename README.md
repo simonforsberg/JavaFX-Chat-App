@@ -7,9 +7,9 @@ A real-time chat client built with **JavaFX 25** and powered by [ntfy](https://d
 ![Build](https://img.shields.io/badge/build-Maven-green)
 
 ---
-## 👥 About This Project
+## 👤 About This Project
 
-This project was developed as a school assignment during my studies.
+This project was developed as a school assignment during my Java studies.
 I'm including it in my portfolio as it demonstrates real-time messaging, JavaFX, MVC architecture, and testing.
 
 ---
@@ -23,7 +23,6 @@ I'm including it in my portfolio as it demonstrates real-time messaging, JavaFX,
 - **Connection status indicator** — live 🟢/🔴 status showing whether you're connected to a topic
 - **Environment-based configuration** — backend URL loaded from a `.env` file (excluded from version control)
 - **Unit tested** — model layer covered with JUnit 5, AssertJ, and Mockito
-- **CI/CD** — GitHub Actions workflow for compilation checks, test execution, and autograding
 
 ## 🛠️ Tech Stack
 
